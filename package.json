@@ -1,0 +1,26 @@
+{
+  "name": "vue-snake",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "test:unit": "vue-cli-service test:unit"
+  },
+  "dependencies": {
+    "core-js": "^3.11.1",
+    "vue": "^3.0.11",
+    "vuex": "^4.0.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.5.12",
+    "@vue/cli-plugin-unit-mocha": "^4.5.12",
+    "@vue/cli-plugin-vuex": "^4.5.12",
+    "@vue/cli-service": "^4.5.12",
+    "@vue/compiler-sfc": "^3.0.11",
+    "@vue/test-utils": "^2.0.0-rc.6",
+    "chai": "^4.3.4",
+    "sass": "^1.32.12",
+    "sass-loader": "^8.0.2"
+  }
+}
