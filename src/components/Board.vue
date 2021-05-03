@@ -15,17 +15,14 @@
         </div>
       </div>
     </div>
-    <div v-else>
+    <div class="mb-4" v-else>
       <h1 class="text-4xl my-10">Game Over</h1>
+      <p>Refresh the page to restart</p>
     </div>
   </div>
   <div>
     <div v-if="active" class="temp-controls">
-      <button @click="moveLeft">Left</button>
-      <button @click="moveUp">Up</button>
-      <button @click="moveDown">Down</button>
-      <button @click="moveRight">right</button>
-      <button @click="spawnFood">Spawn Food</button>
+<!--      <button @click="spawnFood">Spawn Food</button>-->
     </div>
   </div>
   <div class="">
@@ -50,13 +47,14 @@ export default {
           y:1,
           trail:[],
         },
-        speed:275,
+        speed:250,
         direction: 'right',
       },
       food:[],
       active: true,
       score: 0,
       movementInterval: null,
+      foodSpawnInterval: null,
       oppositeDirectionMap:{
         left:'right',
         right:'left',
@@ -88,6 +86,17 @@ export default {
       this.movementInterval = setInterval(() => {
         this.moveDirection();
       }, this.snake.speed)
+    },
+    setScoreInterval(){
+      if (this.active === false){
+        return false;
+      }
+      if (this.scoreInterval !== null){
+        clearInterval(this.scoreInterval)
+      }
+      this.scoreInterval = setInterval(() => {
+        this.score += 5;
+      }, 1000)
     },
     setSnakeSpeed(speed){
       if (speed >= 20){
@@ -146,8 +155,8 @@ export default {
       this.move(0,1)
     },
     spawnFood(){
-      let xPos = Math.floor(Math.random() * this.config.columns);
-      let yPos = Math.floor(Math.random() * this.config.rows);
+      let xPos = Math.ceil(Math.random() * this.config.columns - 1);
+      let yPos = Math.ceil(Math.random() * this.config.rows - 1);
 
       let spawnLocation = this.createPositionNode(xPos,yPos)
       spawnLocation.value = 100;
@@ -157,6 +166,15 @@ export default {
       this.score += points;
     },
     gameOver() {
+      if (this.movementInterval !== null){
+        clearInterval(this.movementInterval)
+      }
+      if (this.foodSpawnInterval !== null){
+        clearInterval(this.foodSpawnInterval)
+      }
+      if (this.scoreInterval !== null){
+        clearInterval(this.scoreInterval)
+      }
       this.active = false;
     },
     isWithinBounds(x,y){
@@ -218,10 +236,10 @@ export default {
       this.setSnakeSpeed(Math.ceil(this.snake.speed*0.95));
       this.setMovementInterval()
     }, 10000)
-    setInterval(() => {
+    this.foodSpawnInterval = setInterval(() => {
       this.spawnFood()
-    }, 10000)
-
+    }, 9000)
+    this.setScoreInterval()
 
     window.addEventListener('keydown', this.handleKeydown, null);
   }
@@ -233,6 +251,7 @@ export default {
   border: 1px solid lime;
 }
 .space{
+
   position:relative;
   width: 25px;
   height: 25px;
@@ -260,17 +279,17 @@ export default {
     width:100%;
     height:100%;
     border-radius:100%;
-
   }
   &.trail{
     background: rgba(50, 205, 50, 0.57);
     width:100%;
     height:100%;
     border-radius:100%;
-
   }
+
 }
 .snake-body{
+
   color:black;
   background:limegreen;
 }
