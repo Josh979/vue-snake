@@ -1,5 +1,8 @@
 <template>
-  <div class="flex justify-center align-middle">
+  <div class="flex justify-center align-middle relative">
+    <div v-show="!started" class="align-middle flex absolute justify-center self-center">
+      <button @click="startGame()" class="start-button text-2xl p-4 font-bold uppercase">Start Game</button>
+    </div>
     <div v-if="active" class="board-wrapper">
       <div class="flex">
         <div v-for="(row) in config.rows" class="">
@@ -16,17 +19,25 @@
       </div>
     </div>
     <div class="mb-4" v-else>
-      <h1 class="text-4xl my-10">Game Over</h1>
-      <p>Refresh the page to restart</p>
+      <h1 class="text-5xl mt-10">Game Over</h1>
+      <div class="mt-4 mb-10">Refresh the page to restart</div>
+
+      <div class="text-xl mb-3 uppercase">{{newHighScore ? 'New' : ''}} High Score: <span>{{highScore}}</span></div>
+
+      <div v-if="!newHighScore" class="my-2 uppercase">
+        This score: {{getScore}}
+      </div>
+
+
     </div>
   </div>
-  <div>
-    <div v-if="active" class="temp-controls">
+  <div v-if="active">
+    <div  class="temp-controls">
 <!--      <button @click="spawnFood">Spawn Food</button>-->
     </div>
-  </div>
-  <div class="">
-    SCORE: {{getScore}}
+    <div class="mt-2">
+      SCORE: {{getScore}}
+    </div>
   </div>
 
 </template>
@@ -43,13 +54,14 @@ export default {
       },
       snake:{
         position:{
-          x:1,
-          y:1,
+          x:0,
+          y:0,
           trail:[],
         },
         speed:250,
         direction: 'right',
       },
+      started: false,
       food:[],
       active: true,
       score: 0,
@@ -73,9 +85,35 @@ export default {
     },
     getScore(){
       return this.score;
+    },
+    highScore(){
+      return localStorage.getItem('highscore');
+    },
+    newHighScore(){
+      return this.getScore >= this.highScore;
     }
   },
   methods:{
+    startGame(){
+      this.started = true;
+      this.snake.position.x = Math.floor(this.config.rows / 4);
+      this.snake.position.y = Math.floor(this.config.columns / 2);
+      let startingPosition = this.snake.position;
+      for (let i = -1; i > -3; --i){
+        this.snake.position.trail.push(this.createPositionNode(startingPosition.x + i, startingPosition.y))
+      }
+      this.setMovementInterval();
+      setInterval(() => {
+        this.setSnakeSpeed(Math.ceil(this.snake.speed*0.95));
+        this.setMovementInterval()
+      }, 10000)
+      this.foodSpawnInterval = setInterval(() => {
+        this.spawnFood()
+      }, 8000)
+      this.setScoreInterval()
+
+      window.addEventListener('keydown', this.handleKeydown, null);
+    },
     setMovementInterval(){
       if (this.active === false){
         return false;
@@ -175,7 +213,13 @@ export default {
       if (this.scoreInterval !== null){
         clearInterval(this.scoreInterval)
       }
+      this.updateHighScore();
       this.active = false;
+    },
+    updateHighScore(){
+      if (localStorage.getItem('highscore') < this.score){
+        localStorage.setItem('highscore', this.score);
+      }
     },
     isWithinBounds(x,y){
       if (x < 1 || x > this.config.columns){
@@ -225,23 +269,6 @@ export default {
     }
   },
   created() {
-    this.snake.position.x = Math.floor(this.config.rows / 4);
-    this.snake.position.y = Math.floor(this.config.columns / 2);
-    let startingPosition = this.snake.position;
-    for (let i = -1; i > -3; --i){
-      this.snake.position.trail.push(this.createPositionNode(startingPosition.x + i, startingPosition.y))
-    }
-    this.setMovementInterval();
-    setInterval(() => {
-      this.setSnakeSpeed(Math.ceil(this.snake.speed*0.95));
-      this.setMovementInterval()
-    }, 10000)
-    this.foodSpawnInterval = setInterval(() => {
-      this.spawnFood()
-    }, 9000)
-    this.setScoreInterval()
-
-    window.addEventListener('keydown', this.handleKeydown, null);
   }
 }
 </script>
@@ -292,6 +319,17 @@ export default {
 
   color:black;
   background:limegreen;
+}
+.start-button{
+  z-index: 100;
+  padding:.5rem 1rem;
+  margin: 1rem;
+  border:1px solid lime;
+  transition: 100ms all;
+  &:hover,&:focus{
+    background-color: limegreen;
+    color:black;
+  }
 }
 .temp-controls{
   button{
